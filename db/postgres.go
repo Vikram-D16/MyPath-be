@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
-	// "os"
+	"os"
 	"time"
-
+"github.com/joho/godotenv"
 	"github.com/jackc/pgx/v4"
 )
 
@@ -16,10 +16,13 @@ var Conn *pgx.Conn
 func Init() {
 	var err error
 	// Fetch database URL from environment variable
+	t := godotenv.Load()
 
-	// dsn := os.Getenv("DATABASE_URL")
-	dsn := "postgres://postgres:yourpassword@localhost:5432/mydb"
+	if t != nil {
+		fmt.Println("Error loading .env file")
+	}
 
+	dsn := os.Getenv("DATABASE_URL")
 	// Retry logic to connect to the database
 	for i := 0; i < 10; i++ {
 		Conn, err = pgx.Connect(context.Background(), dsn)
