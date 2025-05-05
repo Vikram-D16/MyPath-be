@@ -7,6 +7,7 @@ import (
 
 	"github.com/Vikram-D16/MyPath-be/db"
 	"github.com/Vikram-D16/MyPath-be/handlers"
+	"github.com/Vikram-D16/MyPath-be/middlewares"
 	"github.com/Vikram-D16/MyPath-be/models"
 	"github.com/gin-gonic/gin"
 )
@@ -19,6 +20,9 @@ func main() {
 	dbInstance.AutoMigrate(&models.User{})
 
 	router := gin.Default()
+
+	// Authenticate request
+	router.Use(middlewares.AuthMiddleware())
 
 	// Define routes
 	router.GET("/home", handlers.HomeHandler)

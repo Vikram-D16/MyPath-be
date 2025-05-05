@@ -42,6 +42,7 @@ func HomeHandler(c *gin.Context) {
 }
 
 func GetAllUsersHandler(c *gin.Context) {
+	// userId := c.MustGet("userId").(uint)
 	users, err := models.GetAllUsers(db.DB)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve users"})
@@ -50,7 +51,6 @@ func GetAllUsersHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, users)
 }
 
-// LoginHandler handles user login
 func LoginHandler(c *gin.Context) {
 	var credentials struct {
 		Email    string `json:"email"`
