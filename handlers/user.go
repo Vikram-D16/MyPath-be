@@ -1,48 +1,57 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/Vikram-D16/MyPath-be/models"
 	"github.com/Vikram-D16/MyPath-be/utils"
+	"github.com/gin-gonic/gin"
 )
 
 // RegisterHandler handles the user registration
-func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+func RegisterHandler(c *gin.Context) {
 	var user models.User
-	// Decode the incoming JSON request body into the User struct
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+
+	// Bind JSON body to user struct
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
 
 	// Validate user input
 	if user.Username == "" || user.Email == "" || user.Password == "" {
-		http.Error(w, "All fields (username, email, password) are required", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "All fields (username, email, password) are required"})
 		return
 	}
 
 	// Hash the password
 	hashedPassword, err := utils.HashPassword(user.Password)
 	if err != nil {
-		http.Error(w, "Error hashing password", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error hashing password"})
 		return
 	}
 
 	// Insert user into the database
 	if err := models.RegisterUser(user.Username, user.Email, hashedPassword); err != nil {
-		http.Error(w, fmt.Sprintf("Error registering user: %v", err), http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error registering user: %v", err)})
 		return
 	}
 
 	// Respond with success
-	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintln(w, "User registered successfully!")
+	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully!"})
 }
 
 // HomeHandler returns a welcome message
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Welcome to the MYPATH Career Growth App!")
+func HomeHandler(c *gin.Context) {
+	c.String(http.StatusOK, "Welcome to the MYPATH Career Growth App!")
+}
+
+func GetAllUsersHandler(c *gin.Context) {
+	users, err := models.GetAllUsers()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve users"})
+		return
+	}
+	c.JSON(http.StatusOK, users)
 }

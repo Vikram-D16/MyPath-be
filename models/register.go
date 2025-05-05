@@ -19,3 +19,25 @@ func RegisterUser(username, email, passwordHash string) error {
 	}
 	return nil
 }
+
+// GetAllUsers retrieves all users from the database
+func GetAllUsers() ([]User, error) {
+	rows, err := db.Conn.Query(context.Background(), "SELECT username, email FROM users")
+	if err != nil {
+		return nil, fmt.Errorf("error querying users: %w", err)
+	}
+	defer rows.Close()
+
+	var users []User
+
+	for rows.Next() {
+		var user User
+		err := rows.Scan(&user.Username, &user.Email)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning user row: %w", err)
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
+}
