@@ -1,12 +1,14 @@
 package models
 
 import (
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 // RegisterUser inserts a new user into the database
 func RegisterUser(db *gorm.DB, username, email, passwordHash string) error {
 	user := User{
+		ID:       uuid.New(),
 		Username: username,
 		Email:    email,
 		Password: passwordHash,
