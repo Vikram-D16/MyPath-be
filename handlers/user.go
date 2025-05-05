@@ -12,29 +12,52 @@ import (
 
 func RegisterHandler(c *gin.Context) {
 	var user models.User
-
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
-		return
-	}
-
-	if user.Username == "" || user.Email == "" || user.Password == "" {
+	if err := c.ShouldBindJSON(&user); err != nil ||
+		user.Username == "" || user.Email == "" || user.Password == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "All fields (username, email, password) are required"})
 		return
 	}
 
-	hashedPassword, err := utils.HashPassword(user.Password)
+	hashedPwd, err := utils.GeneratePassword(user.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error hashing password"})
 		return
 	}
 
-	if err := models.RegisterUser(db.DB, user.Username, user.Email, hashedPassword); err != nil {
+	if err := models.RegisterUser(db.DB, user.Username, user.Email, hashedPwd); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error registering user: %v", err)})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully!"})
+	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully"})
+}
+
+func LoginHandler(c *gin.Context) {
+	var creds struct {
+		Email, Password string
+	}
+	if err := c.ShouldBindJSON(&creds); err != nil || creds.Email == "" || creds.Password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Email and password are required"})
+		return
+	}
+
+	var user models.User
+	if err := db.DB.Where("email = ?", creds.Email).First(&user).Error; err != nil ||
+		!utils.CheckPasswordHash(creds.Password, user.Password) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+		return
+	}
+
+	var token models.UserToken
+	if err := db.DB.Where("user_id = ? AND is_active = true", user.ID).First(&token).Error; err != nil {
+		token = models.UserToken{UserID: user.ID, Token: utils.GenerateRandomToken(), IsActive: true}
+		db.DB.Create(&token)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"userName": user.Username, "email": user.Email,
+		"message": "Login successful", "accessToken": token.Token,
+	})
 }
 
 func HomeHandler(c *gin.Context) {
@@ -49,62 +72,4 @@ func GetAllUsersHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, users)
-}
-
-func LoginHandler(c *gin.Context) {
-	var credentials struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-
-	if err := c.ShouldBindJSON(&credentials); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
-		return
-	}
-
-	if credentials.Email == "" || credentials.Password == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Email and password are required"})
-		return
-	}
-
-	// Find user
-	var user models.User
-	if err := db.DB.Where("email = ?", credentials.Email).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
-		return
-	}
-
-	// Validate password
-	if !utils.CheckPasswordHash(credentials.Password, user.Password) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
-		return
-	}
-
-	// Check for existing active token
-	var userToken models.UserToken
-	err := db.DB.
-		Where("user_id = ? AND is_active = ?", user.ID, true).
-		First(&userToken).Error
-
-	if err != nil || userToken.Token == "" {
-		newToken := utils.GenerateRandomToken()
-
-		userToken = models.UserToken{
-			UserID:   user.ID,
-			Token:    newToken,
-			IsActive: true,
-		}
-
-		if err := db.DB.Create(&userToken).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate user token"})
-			return
-		}
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"userName":    user.Username,
-		"email":       user.Email,
-		"message":     "Login successful",
-		"accessToken": userToken.Token,
-	})
 }
