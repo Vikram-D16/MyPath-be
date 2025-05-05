@@ -12,14 +12,12 @@ import (
 )
 
 func main() {
-	// Initialize the database connection
+
 	db.InitDB()
 	dbInstance := db.DB
 
-	// Move migration here to break the cycle
 	dbInstance.AutoMigrate(&models.User{})
 
-	// Create a new Gin router
 	router := gin.Default()
 
 	// Define routes
@@ -27,7 +25,6 @@ func main() {
 	router.POST("/register", handlers.RegisterHandler)
 	router.GET("/users", handlers.GetAllUsersHandler)
 
-	// Get the server port from the environment variables or default to 8081
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8081"
