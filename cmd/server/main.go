@@ -5,15 +5,19 @@ import (
 	"log"
 	"os"
 
-	"github.com/gin-gonic/gin"
 	"github.com/Vikram-D16/MyPath-be/db"
 	"github.com/Vikram-D16/MyPath-be/handlers"
+	"github.com/Vikram-D16/MyPath-be/models"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	// Initialize the database connection
-	db.Init()
-	defer db.Close()
+	db.InitDB()
+	dbInstance := db.DB
+
+	// Move migration here to break the cycle
+	dbInstance.AutoMigrate(&models.User{})
 
 	// Create a new Gin router
 	router := gin.Default()

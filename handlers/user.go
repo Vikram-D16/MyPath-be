@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Vikram-D16/MyPath-be/db"
 	"github.com/Vikram-D16/MyPath-be/models"
 	"github.com/Vikram-D16/MyPath-be/utils"
 	"github.com/gin-gonic/gin"
@@ -33,7 +34,7 @@ func RegisterHandler(c *gin.Context) {
 	}
 
 	// Insert user into the database
-	if err := models.RegisterUser(user.Username, user.Email, hashedPassword); err != nil {
+	if err := models.RegisterUser(db.DB, user.Username, user.Email, hashedPassword); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error registering user: %v", err)})
 		return
 	}
@@ -48,7 +49,7 @@ func HomeHandler(c *gin.Context) {
 }
 
 func GetAllUsersHandler(c *gin.Context) {
-	users, err := models.GetAllUsers()
+	users, err := models.GetAllUsers(db.DB)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve users"})
 		return

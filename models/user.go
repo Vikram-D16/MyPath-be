@@ -1,8 +1,8 @@
 package models
 
-// User struct is used to capture registration details
 type User struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	ID       uint   `gorm:"primaryKey" json:"id"`
+	Username string `gorm:"unique;not null" json:"username"`
+	Email    string `gorm:"unique;not null" json:"email"`
+	Password string `gorm:"not null" json:"password"`
 }

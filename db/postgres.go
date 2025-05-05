@@ -1,46 +1,41 @@
 package db
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"os"
 	"time"
-"github.com/joho/godotenv"
-	"github.com/jackc/pgx/v4"
+
+	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+
+	"github.com/Vikram-D16/MyPath-be/models"
 )
 
-var Conn *pgx.Conn
+var DB *gorm.DB
 
-// Init initializes the database connection with retry logic
-func Init() {
-	var err error
-	// Fetch database URL from environment variable
-	t := godotenv.Load()
-
-	if t != nil {
-		fmt.Println("Error loading .env file")
-	}
+func InitDB() {
+	_ = godotenv.Load()
 
 	dsn := os.Getenv("DATABASE_URL")
-	// Retry logic to connect to the database
+	var err error
+
 	for i := 0; i < 10; i++ {
-		Conn, err = pgx.Connect(context.Background(), dsn)
+		DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 		if err == nil {
-			fmt.Println("✅ Connected to PostgreSQL DB")
-			return
+			fmt.Println("✅ Connected to PostgreSQL with GORM")
+			break
 		}
-		log.Printf("Unable to connect to database, retrying in 2 seconds... (Attempt %d/10)\n", i+1)
+		log.Printf("❌ DB connection failed (attempt %d): %v\n", i+1, err)
 		time.Sleep(2 * time.Second)
 	}
 
-	// If still unable to connect after 10 attempts, log fatal error
-	log.Fatalf("Unable to connect to database after 10 retries: %v\n", err)
-}
+	if err != nil {
+		log.Fatalf("Could not connect to database after retries: %v", err)
+	}
 
-// Close closes the database connection
-func Close() {
-	if Conn != nil {
-		Conn.Close(context.Background())
+	if err := DB.AutoMigrate(&models.User{}); err != nil {
+		log.Fatalf("Auto-migrate failed: %v", err)
 	}
 }

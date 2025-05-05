@@ -1,43 +1,22 @@
 package models
 
 import (
-	"context"
-	"fmt"
-
-	"github.com/Vikram-D16/MyPath-be/db"
+	"gorm.io/gorm"
 )
 
 // RegisterUser inserts a new user into the database
-func RegisterUser(username, email, passwordHash string) error {
-	// Insert user into the 'users' table
-	_, err := db.Conn.Exec(context.Background(),
-		"INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
-		username, email, passwordHash,
-	)
-	if err != nil {
-		return fmt.Errorf("error inserting user: %w", err)
+func RegisterUser(db *gorm.DB, username, email, passwordHash string) error {
+	user := User{
+		Username: username,
+		Email:    email,
+		Password: passwordHash,
 	}
-	return nil
+	return db.Create(&user).Error
 }
 
 // GetAllUsers retrieves all users from the database
-func GetAllUsers() ([]User, error) {
-	rows, err := db.Conn.Query(context.Background(), "SELECT username, email FROM users")
-	if err != nil {
-		return nil, fmt.Errorf("error querying users: %w", err)
-	}
-	defer rows.Close()
-
+func GetAllUsers(db *gorm.DB) ([]User, error) {
 	var users []User
-
-	for rows.Next() {
-		var user User
-		err := rows.Scan(&user.Username, &user.Email)
-		if err != nil {
-			return nil, fmt.Errorf("error scanning user row: %w", err)
-		}
-		users = append(users, user)
-	}
-
-	return users, nil
+	result := db.Find(&users)
+	return users, result.Error
 }
