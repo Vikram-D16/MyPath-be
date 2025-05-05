@@ -65,7 +65,7 @@ func HomeHandler(c *gin.Context) {
 }
 
 func GetAllUsersHandler(c *gin.Context) {
-	// userId := c.MustGet("userId").(uint)
+	// userId := c.MustGet("userId").(uuid.UUID)
 	users, err := utils.GetAllUsers(db.DB)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve users"})

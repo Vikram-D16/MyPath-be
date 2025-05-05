@@ -1,0 +1,28 @@
+# Root directory of your project (set this to the root of your project)
+root = "."
+tmp_dir = "tmp"
+
+# File extension filter for watching files
+include_ext = ["go", "tpl", "tmpl", "html"]
+
+# Build command to compile the application
+build = "go build -o ./tmp/main ./cmd/server"
+
+# Command to run after building the app
+cmd = "./tmp/main"
+
+# Watch for changes in the following directories
+watch_dir = [
+    "cmd",          # Watch the cmd folder
+    "db",           # Watch db folder
+    "handlers",     # Watch handlers folder
+    "middlewares",  # Watch middlewares folder
+    "models",       # Watch models folder
+    "utils"         # Watch utils folder
+]
+
+# Ignore tmp directory to avoid circular file watching
+exclude_dir = ["tmp"]
+
+# Run a clean-up before starting
+pre_build = "rm -rf tmp/*"
