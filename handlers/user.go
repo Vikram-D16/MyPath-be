@@ -24,7 +24,7 @@ func RegisterHandler(c *gin.Context) {
 		return
 	}
 
-	if err := models.RegisterUser(db.DB, user.Username, user.Email, hashedPwd); err != nil {
+	if err := utils.RegisterUser(db.DB, user.Username, user.Email, hashedPwd); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error registering user: %v", err)})
 		return
 	}
@@ -66,7 +66,7 @@ func HomeHandler(c *gin.Context) {
 
 func GetAllUsersHandler(c *gin.Context) {
 	// userId := c.MustGet("userId").(uint)
-	users, err := models.GetAllUsers(db.DB)
+	users, err := utils.GetAllUsers(db.DB)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve users"})
 		return
