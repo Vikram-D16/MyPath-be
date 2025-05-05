@@ -24,6 +24,7 @@ func main() {
 	router.GET("/home", handlers.HomeHandler)
 	router.POST("/register", handlers.RegisterHandler)
 	router.GET("/users", handlers.GetAllUsersHandler)
+	router.POST("/login", handlers.LoginHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
