@@ -8,6 +8,7 @@ import (
 	"github.com/Vikram-D16/MyPath-be/models"
 	"github.com/Vikram-D16/MyPath-be/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 func RegisterHandler(c *gin.Context) {
@@ -72,4 +73,30 @@ func GetAllUsersHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, users)
+}
+
+func DeleteUserHandler(c *gin.Context) {
+	userIdInterface, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	userID, ok := userIdInterface.(uuid.UUID)
+	fmt.Println(userID)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	// Delete user record
+	if err := db.DB.Delete(&models.User{}, userID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
+		return
+	}
+
+	// Delete any active tokens for this user
+	db.DB.Where("user_id = ?", userID).Delete(&models.UserToken{})
+
+	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 }

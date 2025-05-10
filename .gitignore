@@ -1,3 +1,4 @@
 # Env files and secrets
 .env
 .env.*
+tmp/ 

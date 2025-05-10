@@ -35,6 +35,7 @@ func main() {
 	// Define routes
 	router.POST("/register", handlers.RegisterHandler)
 	router.POST("/login", handlers.LoginHandler)
+	router.DELETE("/account", handlers.DeleteUserHandler)
 
 	router.GET("/home", handlers.HomeHandler)
 	router.GET("/users", handlers.GetAllUsersHandler)
