@@ -13,9 +13,30 @@ import (
 
 func RegisterHandler(c *gin.Context) {
 	var user models.User
-	if err := c.ShouldBindJSON(&user); err != nil ||
-		user.Username == "" || user.Email == "" || user.Password == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "All fields (username, email, password) are required"})
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	var missingFields []string
+	if user.Username == "" {
+		missingFields = append(missingFields, "username")
+	}
+	if user.Email == "" {
+		missingFields = append(missingFields, "email")
+	}
+	if user.Password == "" {
+		missingFields = append(missingFields, "password")
+	}
+
+	if len(missingFields) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Missing fields: %v", missingFields)})
+		return
+	}
+
+	var existingUser models.User
+	if err := db.DB.Where("email = ?", user.Email).First(&existingUser).Error; err == nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "Email already registered"})
 		return
 	}
 
@@ -25,12 +46,13 @@ func RegisterHandler(c *gin.Context) {
 		return
 	}
 
-	if err := utils.RegisterUser(db.DB, user.Username, user.Email, hashedPwd); err != nil {
+	if err := utils.RegisterUser(db.DB, user.Username, user.Email, hashedPwd, user.Avatar, user.Bio); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error registering user: %v", err)})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully"})
+	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully", "user": gin.H{
+		"id": user.ID, "username": user.Username, "email": user.Email, "avatar": user.Avatar, "bio": user.Bio}})
 }
 
 func LoginHandler(c *gin.Context) {
@@ -66,7 +88,6 @@ func HomeHandler(c *gin.Context) {
 }
 
 func GetAllUsersHandler(c *gin.Context) {
-	// userId := c.MustGet("userId").(uuid.UUID)
 	users, err := utils.GetAllUsers(db.DB)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve users"})

@@ -1,4 +1,3 @@
-
 CREATE TABLE user_tokens (
     id SERIAL PRIMARY KEY,
     user_id UUID NOT NULL UNIQUE,

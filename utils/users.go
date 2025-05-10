@@ -7,12 +7,14 @@ import (
 )
 
 // RegisterUser inserts a new user into the database
-func RegisterUser(db *gorm.DB, username, email, passwordHash string) error {
+func RegisterUser(db *gorm.DB, username, email, passwordHash, avatar, bio string) error {
 	user := models.User{
 		ID:       uuid.New(),
 		Username: username,
 		Email:    email,
 		Password: passwordHash,
+		Avatar:   avatar,
+		Bio:      bio,
 	}
 	return db.Create(&user).Error
 }
