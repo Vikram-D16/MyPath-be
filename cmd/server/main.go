@@ -40,6 +40,9 @@ func main() {
 	router.GET("/home", handlers.HomeHandler)
 	router.GET("/users", handlers.GetAllUsersHandler)
 
+	router.POST("/organizations", handlers.CreateOrganizationHandler)
+	router.GET("/organizations", handlers.GetAllOrganizationsHandler)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8081"
