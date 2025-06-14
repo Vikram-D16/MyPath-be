@@ -1,0 +1,55 @@
+# Air config for modern versions (v1.61.7+)
+
+# Root directory of the project
+root = "."
+
+# Temporary directory for compiled binaries and other build files
+tmp_dir = "tmp"
+
+[build]
+  # Command to build the Go application
+  cmd = "go build -o ./tmp/main ./cmd/server"
+
+  # Path to the binary that will be executed after building
+  bin = "tmp/main"
+
+  # Full path to the binary (same as `bin` here, but can be an absolute path)
+  full_bin = "tmp/main"
+
+  # Only watch files with these extensions
+  include_ext = ["go"]
+
+  # Directories to ignore during file watching
+  exclude_dir = ["tmp"]
+
+  # Specific files to exclude from watching
+  exclude_file = []
+
+  # Files matching these regex patterns will be excluded (e.g., Go test files)
+  exclude_regex = ["_test.go"]
+
+  # Delay (in milliseconds) before rebuilding after a file change
+  delay = 1000
+
+  # Send an interrupt signal to the process before killing it
+  send_interrupt = true
+
+  # Delay (in milliseconds) before force killing the process if it doesn't stop
+  kill_delay = 500
+
+[log]
+  # Show timestamps in log output
+  time = true
+
+[color]
+  # Color for main logs
+  main = "yellow"
+
+  # Color for file watcher events
+  watcher = "cyan"
+
+  # Color for build logs
+  build = "green"
+
+  # Color for runner output (i.e., the app’s runtime logs)
+  runner = "magenta"

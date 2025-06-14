@@ -10,9 +10,7 @@ import (
 
 const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
-// HashPassword hashes the password using bcrypt
-func HashPassword(password string) (string, error) {
-	// Generate a bcrypt hash for the password
+func GeneratePassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(hash), err
 }

@@ -9,8 +9,6 @@ import (
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-
-	"github.com/Vikram-D16/MyPath-be/models"
 )
 
 var DB *gorm.DB
@@ -35,7 +33,7 @@ func InitDB() {
 		log.Fatalf("Could not connect to database after retries: %v", err)
 	}
 
-	if err := DB.AutoMigrate(&models.User{}); err != nil {
-		log.Fatalf("Auto-migrate failed: %v", err)
-	}
+	//	if err := DB.AutoMigrate(&models.User{}); err != nil {
+	//		log.Fatalf("Auto-migrate failed: %v", err)
+	//	}
 }

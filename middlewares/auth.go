@@ -32,7 +32,6 @@ func AuthMiddleware() gin.HandlerFunc {
 		// Attach userId to the context so it’s available in handlers
 		c.Set("userId", userToken.UserID)
 
-		// Allow request to proceed
 		c.Next()
 	}
 }

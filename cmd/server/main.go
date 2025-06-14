@@ -22,13 +22,26 @@ func main() {
 	router := gin.Default()
 
 	// Authenticate request
-	router.Use(middlewares.AuthMiddleware())
+	router.Use(func(c *gin.Context) {
+		if c.FullPath() != "/register" && c.FullPath() != "/login" {
+			middlewares.AuthMiddleware()(c)
+			if c.IsAborted() {
+				return
+			}
+		}
+		c.Next()
+	})
 
 	// Define routes
-	router.GET("/home", handlers.HomeHandler)
 	router.POST("/register", handlers.RegisterHandler)
-	router.GET("/users", handlers.GetAllUsersHandler)
 	router.POST("/login", handlers.LoginHandler)
+	router.DELETE("/account", handlers.DeleteUserHandler)
+
+	router.GET("/home", handlers.HomeHandler)
+	router.GET("/users", handlers.GetAllUsersHandler)
+
+	router.POST("/organizations", handlers.CreateOrganizationHandler)
+	router.GET("/organizations", handlers.GetAllOrganizationsHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
