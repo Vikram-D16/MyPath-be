@@ -43,6 +43,12 @@ func main() {
 	router.POST("/organizations", handlers.CreateOrganizationHandler)
 	router.GET("/organizations", handlers.GetAllOrganizationsHandler)
 
+	router.POST("/groups", handlers.CreateGroupHandler)
+	router.GET("/groups", handlers.GetAllGroupsHandler)
+	router.DELETE("/groups/:id", handlers.DeleteGroupHandler)
+
+	router.POST("/group-member", handlers.CreateGroupMemberHandler)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8081"
